@@ -20,19 +20,23 @@ type TPClient struct {
 
 // NewTPClient creates a new Target Process client
 func NewTPClient() (*TPClient, error) {
-	// Hardcoded token for testing - TODO: move back to env var
-	token := "MTg4OlJ2YVpwVFNtbmRqYlV1MEJoQ2VvSDRQMVR2Y0tWRjUvTnl1S0JoTW9Ba2c9"
+	token := os.Getenv("TP_ACCESS_TOKEN")
+	if token == "" {
+		return nil, fmt.Errorf("TP_ACCESS_TOKEN environment variable is required")
+	}
 
 	baseURL := os.Getenv("TP_BASE_URL")
 	if baseURL == "" {
-		baseURL = "https://thettcgroup.tpondemand.com"
+		return nil, fmt.Errorf("TP_BASE_URL environment variable is required")
 	}
 
-	userID := 188 // Default user ID
-	if userIDStr := os.Getenv("TP_USER_ID"); userIDStr != "" {
-		if id, err := strconv.Atoi(userIDStr); err == nil {
-			userID = id
-		}
+	userIDStr := os.Getenv("TP_USER_ID")
+	if userIDStr == "" {
+		return nil, fmt.Errorf("TP_USER_ID environment variable is required")
+	}
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("TP_USER_ID must be a valid integer: %w", err)
 	}
 
 	client := &TPClient{
@@ -233,37 +237,3 @@ func FormatTicketsList(tickets []Assignable) string {
 	return sb.String()
 }
 
-// FormatWorkSummary creates a summary of current work
-func FormatWorkSummary(tickets []Assignable) string {
-	if len(tickets) == 0 {
-		return "You have no tickets currently in progress."
-	}
-
-	var sb strings.Builder
-	sb.WriteString("# Work Summary\n\n")
-	sb.WriteString(fmt.Sprintf("You have **%d tickets** currently in progress:\n\n", len(tickets)))
-
-	// Group by type
-	typeGroups := make(map[string][]Assignable)
-	for _, t := range tickets {
-		typeName := "Other"
-		if t.EntityType != nil {
-			typeName = t.EntityType.Name
-		}
-		typeGroups[typeName] = append(typeGroups[typeName], t)
-	}
-
-	for typeName, items := range typeGroups {
-		sb.WriteString(fmt.Sprintf("## %s (%d)\n", typeName, len(items)))
-		for _, item := range items {
-			project := ""
-			if item.Project != nil {
-				project = fmt.Sprintf(" [%s]", item.Project.Name)
-			}
-			sb.WriteString(fmt.Sprintf("- #%d: %s%s\n", item.ID, item.Name, project))
-		}
-		sb.WriteString("\n")
-	}
-
-	return sb.String()
-}

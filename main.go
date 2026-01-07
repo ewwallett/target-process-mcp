@@ -55,11 +55,6 @@ func registerTools(s *server.MCPServer) {
 	)
 	s.AddTool(getTicketTool, getTicketDetailsHandler)
 
-	// Tool: summarize_my_work
-	summarizeTool := mcp.NewTool("summarize_my_work",
-		mcp.WithDescription("Get a summary of your current workload, showing all in-progress tickets grouped by type (User Stories, Bugs, Tasks, etc.)."),
-	)
-	s.AddTool(summarizeTool, summarizeMyWorkHandler)
 }
 
 func listMyTicketsHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -109,15 +104,3 @@ func getTicketDetailsHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp
 	return mcp.NewToolResultText(FormatTicket(*ticket)), nil
 }
 
-func summarizeMyWorkHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	if tpClient == nil {
-		return mcp.NewToolResultError("TP client not initialized. Please set TP_ACCESS_TOKEN environment variable."), nil
-	}
-
-	tickets, err := tpClient.GetMyInProgressTickets()
-	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("Error fetching tickets: %v", err)), nil
-	}
-
-	return mcp.NewToolResultText(FormatWorkSummary(tickets)), nil
-}

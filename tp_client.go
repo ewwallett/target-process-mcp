@@ -161,8 +161,22 @@ func (c *TPClient) GetTicketDetails(ticketID int) (*Assignable, error) {
 	return &assignable, nil
 }
 
+// GetBaseURL returns the base URL for the Target Process instance
+func (c *TPClient) GetBaseURL() string {
+	return c.config.BaseURL
+}
+
+// slugify converts a string to a URL-friendly slug
+func slugify(s string) string {
+	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s, " - ", "-")
+	s = strings.ReplaceAll(s, " ", "-")
+	s = strings.ReplaceAll(s, "'", "")
+	return s
+}
+
 // FormatTicket formats a single ticket for display
-func FormatTicket(a Assignable) string {
+func FormatTicket(a Assignable, baseURL string) string {
 	var sb strings.Builder
 
 	entityType := "Unknown"
@@ -185,7 +199,10 @@ func FormatTicket(a Assignable) string {
 		priority = a.Priority.Name
 	}
 
+	ticketURL := fmt.Sprintf("%s/entity/%d-%s", baseURL, a.ID, slugify(a.Name))
+
 	sb.WriteString(fmt.Sprintf("## #%d: %s\n", a.ID, a.Name))
+	sb.WriteString(fmt.Sprintf("**Link:** %s\n", ticketURL))
 	sb.WriteString(fmt.Sprintf("**Type:** %s | **State:** %s | **Priority:** %s\n", entityType, state, priority))
 	sb.WriteString(fmt.Sprintf("**Project:** %s\n", project))
 
@@ -221,7 +238,7 @@ func FormatTicket(a Assignable) string {
 }
 
 // FormatTicketsList formats a list of tickets for display
-func FormatTicketsList(tickets []Assignable) string {
+func FormatTicketsList(tickets []Assignable, baseURL string) string {
 	if len(tickets) == 0 {
 		return "No in-progress tickets found."
 	}
@@ -230,7 +247,7 @@ func FormatTicketsList(tickets []Assignable) string {
 	sb.WriteString(fmt.Sprintf("# My In-Progress Tickets (%d)\n\n", len(tickets)))
 
 	for _, ticket := range tickets {
-		sb.WriteString(FormatTicket(ticket))
+		sb.WriteString(FormatTicket(ticket, baseURL))
 		sb.WriteString("\n---\n\n")
 	}
 

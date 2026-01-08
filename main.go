@@ -67,7 +67,7 @@ func listMyTicketsHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.Ca
 		return mcp.NewToolResultError(fmt.Sprintf("Error fetching tickets: %v", err)), nil
 	}
 
-	return mcp.NewToolResultText(FormatTicketsList(tickets)), nil
+	return mcp.NewToolResultText(FormatTicketsList(tickets, tpClient.GetBaseURL())), nil
 }
 
 func getTicketDetailsHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -101,6 +101,6 @@ func getTicketDetailsHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp
 		return mcp.NewToolResultError(fmt.Sprintf("Error fetching ticket %d: %v", ticketID, err)), nil
 	}
 
-	return mcp.NewToolResultText(FormatTicket(*ticket)), nil
+	return mcp.NewToolResultText(FormatTicket(*ticket, tpClient.GetBaseURL())), nil
 }
 

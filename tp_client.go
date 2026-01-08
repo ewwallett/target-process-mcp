@@ -189,12 +189,19 @@ func (c *TPClient) GetBaseURL() string {
 	return c.config.BaseURL
 }
 
-// slugify converts a string to a URL-friendly slug
+// slugify converts a string to a URL-friendly slug matching TP's format
 func slugify(s string) string {
 	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s, ".", "")
+	s = strings.ReplaceAll(s, "+", "")
+	s = strings.ReplaceAll(s, "?", "")
+	s = strings.ReplaceAll(s, "'", "")
 	s = strings.ReplaceAll(s, " - ", "-")
 	s = strings.ReplaceAll(s, " ", "-")
-	s = strings.ReplaceAll(s, "'", "")
+	// Remove consecutive hyphens
+	for strings.Contains(s, "--") {
+		s = strings.ReplaceAll(s, "--", "-")
+	}
 	return s
 }
 

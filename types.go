@@ -25,6 +25,12 @@ type Priority struct {
 	Importance int    `json:"Importance"`
 }
 
+// Release represents a TP release
+type Release struct {
+	ID   int    `json:"Id"`
+	Name string `json:"Name"`
+}
+
 // User represents a TP user
 type User struct {
 	ID        int    `json:"Id"`
@@ -54,6 +60,7 @@ type Assignable struct {
 	EntityState *EntityState        `json:"EntityState,omitempty"`
 	Project     *Project            `json:"Project,omitempty"`
 	Priority    *Priority           `json:"Priority,omitempty"`
+	Release     *Release            `json:"Release,omitempty"`
 	Comments    *CommentsCollection `json:"Comments,omitempty"`
 }
 

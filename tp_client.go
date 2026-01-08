@@ -141,7 +141,7 @@ func (c *TPClient) GetMyInProgressTickets() ([]Assignable, error) {
 
 // GetTicketDetails returns detailed information about a specific ticket
 func (c *TPClient) GetTicketDetails(ticketID int) (*Assignable, error) {
-	includeFields := "[Id,Name,Description,EntityType,EntityState,Project,Priority,Comments[Id,Description,Owner[Id,FirstName,LastName,Email]]]"
+	includeFields := "[Id,Name,Description,EntityType,EntityState,Project,Priority,Release,Comments[Id,Description,Owner[Id,FirstName,LastName,Email]]]"
 
 	params := map[string]string{
 		"include": includeFields,
@@ -199,12 +199,17 @@ func FormatTicket(a Assignable, baseURL string) string {
 		priority = a.Priority.Name
 	}
 
+	release := "None"
+	if a.Release != nil {
+		release = a.Release.Name
+	}
+
 	ticketURL := fmt.Sprintf("%s/entity/%d-%s", baseURL, a.ID, slugify(a.Name))
 
 	sb.WriteString(fmt.Sprintf("## #%d: %s\n", a.ID, a.Name))
 	sb.WriteString(fmt.Sprintf("**Link:** %s\n", ticketURL))
 	sb.WriteString(fmt.Sprintf("**Type:** %s | **State:** %s | **Priority:** %s\n", entityType, state, priority))
-	sb.WriteString(fmt.Sprintf("**Project:** %s\n", project))
+	sb.WriteString(fmt.Sprintf("**Project:** %s | **Release:** %s\n", project, release))
 
 	if a.Description != "" {
 		// Truncate long descriptions

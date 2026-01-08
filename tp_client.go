@@ -161,6 +161,29 @@ func (c *TPClient) GetTicketDetails(ticketID int) (*Assignable, error) {
 	return &assignable, nil
 }
 
+// GetAttachments returns attachments for a specific entity
+func (c *TPClient) GetAttachments(entityID int) ([]Attachment, error) {
+	whereClause := fmt.Sprintf("General.Id eq %d", entityID)
+	includeFields := "[Id,Name,Uri]"
+
+	params := map[string]string{
+		"where":   whereClause,
+		"include": includeFields,
+	}
+
+	data, err := c.makeRequest("/Attachments", params)
+	if err != nil {
+		return nil, err
+	}
+
+	var response AttachmentsResponse
+	if err := json.Unmarshal(data, &response); err != nil {
+		return nil, fmt.Errorf("failed to parse attachments: %w", err)
+	}
+
+	return response.Items, nil
+}
+
 // GetBaseURL returns the base URL for the Target Process instance
 func (c *TPClient) GetBaseURL() string {
 	return c.config.BaseURL
@@ -176,7 +199,7 @@ func slugify(s string) string {
 }
 
 // FormatTicket formats a single ticket for display
-func FormatTicket(a Assignable, baseURL string) string {
+func FormatTicket(a Assignable, baseURL string, attachments []Attachment) string {
 	var sb strings.Builder
 
 	entityType := "Unknown"
@@ -239,6 +262,13 @@ func FormatTicket(a Assignable, baseURL string) string {
 		}
 	}
 
+	if len(attachments) > 0 {
+		sb.WriteString(fmt.Sprintf("\n**Attachments (%d):**\n", len(attachments)))
+		for _, att := range attachments {
+			sb.WriteString(fmt.Sprintf("- %s: %s\n", att.Name, att.Uri))
+		}
+	}
+
 	return sb.String()
 }
 
@@ -252,7 +282,7 @@ func FormatTicketsList(tickets []Assignable, baseURL string) string {
 	sb.WriteString(fmt.Sprintf("# My In-Progress Tickets (%d)\n\n", len(tickets)))
 
 	for _, ticket := range tickets {
-		sb.WriteString(FormatTicket(ticket, baseURL))
+		sb.WriteString(FormatTicket(ticket, baseURL, nil))
 		sb.WriteString("\n---\n\n")
 	}
 

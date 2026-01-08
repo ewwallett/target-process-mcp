@@ -101,6 +101,11 @@ func getTicketDetailsHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp
 		return mcp.NewToolResultError(fmt.Sprintf("Error fetching ticket %d: %v", ticketID, err)), nil
 	}
 
-	return mcp.NewToolResultText(FormatTicket(*ticket, tpClient.GetBaseURL())), nil
+	attachments, err := tpClient.GetAttachments(ticketID)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Error fetching attachments for ticket %d: %v", ticketID, err)), nil
+	}
+
+	return mcp.NewToolResultText(FormatTicket(*ticket, tpClient.GetBaseURL(), attachments)), nil
 }
 

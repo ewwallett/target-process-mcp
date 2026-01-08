@@ -46,6 +46,18 @@ type Comment struct {
 	Owner       *User  `json:"Owner,omitempty"`
 }
 
+// Attachment represents a file attached to a TP entity
+type Attachment struct {
+	ID   int    `json:"Id"`
+	Name string `json:"Name"`
+	Uri  string `json:"Uri"`
+}
+
+// AttachmentsResponse represents the API response for attachments
+type AttachmentsResponse struct {
+	Items []Attachment `json:"Items"`
+}
+
 // CommentsCollection represents the comments collection in API response
 type CommentsCollection struct {
 	Items []Comment `json:"Items"`

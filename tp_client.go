@@ -189,22 +189,6 @@ func (c *TPClient) GetBaseURL() string {
 	return c.config.BaseURL
 }
 
-// slugify converts a string to a URL-friendly slug matching TP's format
-func slugify(s string) string {
-	s = strings.ToLower(s)
-	s = strings.ReplaceAll(s, ".", "")
-	s = strings.ReplaceAll(s, "+", "")
-	s = strings.ReplaceAll(s, "?", "")
-	s = strings.ReplaceAll(s, "'", "")
-	s = strings.ReplaceAll(s, " - ", "-")
-	s = strings.ReplaceAll(s, " ", "-")
-	// Remove consecutive hyphens
-	for strings.Contains(s, "--") {
-		s = strings.ReplaceAll(s, "--", "-")
-	}
-	return s
-}
-
 // FormatTicket formats a single ticket for display
 func FormatTicket(a Assignable, baseURL string, attachments []Attachment) string {
 	var sb strings.Builder
@@ -234,7 +218,7 @@ func FormatTicket(a Assignable, baseURL string, attachments []Attachment) string
 		release = a.Release.Name
 	}
 
-	ticketURL := fmt.Sprintf("%s/entity/%d-%s", baseURL, a.ID, slugify(a.Name))
+	ticketURL := fmt.Sprintf("%s/entity/%d", baseURL, a.ID)
 
 	sb.WriteString(fmt.Sprintf("## #%d: %s\n", a.ID, a.Name))
 	sb.WriteString(fmt.Sprintf("**Link:** %s\n", ticketURL))
@@ -242,12 +226,7 @@ func FormatTicket(a Assignable, baseURL string, attachments []Attachment) string
 	sb.WriteString(fmt.Sprintf("**Project:** %s | **Release:** %s\n", project, release))
 
 	if a.Description != "" {
-		// Truncate long descriptions
-		desc := a.Description
-		if len(desc) > 500 {
-			desc = desc[:500] + "..."
-		}
-		sb.WriteString(fmt.Sprintf("\n**Description:**\n%s\n", desc))
+		sb.WriteString(fmt.Sprintf("\n**Description:**\n%s\n", a.Description))
 	}
 
 	if a.Comments != nil && len(a.Comments.Items) > 0 {
